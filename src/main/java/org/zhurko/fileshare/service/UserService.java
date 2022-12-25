@@ -1,6 +1,6 @@
 package org.zhurko.fileshare.service;
 
-import org.zhurko.fileshare.model.User;
+import org.zhurko.fileshare.entity.UserEntity;
 import org.zhurko.fileshare.repository.UserRepository;
 
 import java.util.List;
@@ -13,19 +13,19 @@ public class UserService {
         this.userRepo = userRepo;
     }
 
-    public User save(User user) {
+    public UserEntity save(UserEntity user) {
         return userRepo.save(user);
     }
 
-    public User getById(Long id) {
+    public UserEntity getById(Long id) {
         return userRepo.getById(id);
     }
 
-    public List<User> getAll() {
+    public List<UserEntity> getAll() {
         return userRepo.getAll();
     }
 
-    public User update(User user) {
+    public UserEntity update(UserEntity user) {
         return userRepo.update(user);
     }
 

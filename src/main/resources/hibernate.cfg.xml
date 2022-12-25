@@ -11,7 +11,9 @@
         <property name="hibernate.connection.password">Secret123</property>
         <property name="show_sql">true</property>
 
-        <mapping class="org.zhurko.fileshare.model.User" />
+        <mapping class="org.zhurko.fileshare.entity.UserEntity" />
+        <mapping class="org.zhurko.fileshare.entity.FileEntity" />
+        <mapping class="org.zhurko.fileshare.entity.EventEntity" />
 
     </session-factory>
 </hibernate-configuration>
