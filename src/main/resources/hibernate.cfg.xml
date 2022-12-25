@@ -6,9 +6,9 @@
     <session-factory>
         <property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>
         <property name="hibernate.connection.driver_class">com.mysql.jdbc.Driver</property>
-        <property name="hibernate.connection.url">jdbc:mysql://localhost/fileshare_service</property>
-        <property name="hibernate.connection.username">fileshare_service_admin</property>
-        <property name="hibernate.connection.password">Secret123</property>
+        <property name="hibernate.connection.url">jdbc:mysql://i54jns50s3z6gbjt.chr7pe7iynqr.eu-west-1.rds.amazonaws.com/l0njlm55b3n24dtu</property>
+        <property name="hibernate.connection.username">lvymtqs55gge4414</property>
+        <property name="hibernate.connection.password">d2gjeny40kd0fgxr</property>
         <property name="show_sql">true</property>
 
         <mapping class="org.zhurko.fileshare.entity.UserEntity" />
