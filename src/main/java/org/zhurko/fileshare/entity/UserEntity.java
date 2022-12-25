@@ -1,11 +1,13 @@
-package org.zhurko.fileshare.model;
+package org.zhurko.fileshare.entity;
 
-
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 import java.util.ArrayList;
@@ -14,7 +16,7 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "user")
-public class User {
+public class UserEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,9 +32,10 @@ public class User {
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
-//    private List<Event> events = new ArrayList<>();
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    private List<EventEntity> events = new ArrayList<>();
 
-    public User() {
+    public UserEntity() {
     }
 
     public Long getId() {
@@ -67,19 +70,24 @@ public class User {
         this.email = email;
     }
 
-//    public List<Event> getEvents() {
-//        return events;
-//    }
-//
-//    public void setEvents(List<Event> events) {
-//        this.events = events;
-//    }
+    public List<EventEntity> getEvents() {
+        return events;
+    }
+
+    public void setEvents(List<EventEntity> events) {
+        this.events = events;
+    }
+
+    public void addEvent(EventEntity event) {
+        events.add(event);
+        event.setUser(this);
+    }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        User user = (User) o;
+        UserEntity user = (UserEntity) o;
         return id.equals(user.id)
                 && firstName.equals(user.firstName)
                 && lastName.equals(user.lastName)
@@ -93,7 +101,7 @@ public class User {
 
     @Override
     public String toString() {
-        return "User{" +
+        return "UserEntity{" +
                 "id=" + id +
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +

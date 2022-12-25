@@ -2,98 +2,85 @@ package org.zhurko.fileshare.repository.hibernate;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.zhurko.fileshare.model.User;
+import org.zhurko.fileshare.entity.UserEntity;
 import org.zhurko.fileshare.repository.UserRepository;
+import org.zhurko.fileshare.util.HibernateResultSetMapper;
 import org.zhurko.fileshare.util.HibernateUtil;
 
-import java.util.Collections;
 import java.util.List;
 
 public class UserRepositoryImpl implements UserRepository {
-    @Override
-    public User save(User user) {
-        User savedUser = null;
-        Session session = null;
-        Transaction transaction = null;
 
-        session = HibernateUtil.getSessionFactory().openSession();
-        transaction = session.beginTransaction();
-        session.persist(user);
-        savedUser = session.get(User.class, user.getId());
-        transaction.commit();
-        session.close();
-
-        return savedUser;
-    }
+    private final HibernateResultSetMapper resultSetMapper = new HibernateResultSetMapper();
 
     @Override
-    public User getById(Long id) {
-        User user = null;
-        Session session = null;
-        Transaction transaction = null;
-
-        session = HibernateUtil.getSessionFactory().openSession();
-        transaction = session.beginTransaction();
-        user = session.get(User.class, id);
-        transaction.commit();
-        session.close();
-
-        return user;
-    }
-
-    @Override
-    public List<User> getAll() {
-        return getAllUsersInternal();
-    }
-
-    @Override
-    public User update(User editedUser) {
-        Session session = null;
-        Transaction transaction = null;
-
-        session = HibernateUtil.getSessionFactory().openSession();
-        transaction = session.beginTransaction();
-
-        User user = session.get(User.class, editedUser.getId());
-        user.setFirstName(editedUser.getFirstName());
-        user.setLastName(editedUser.getLastName());
-        session.merge(user);
-        transaction.commit();
-        session.close();
+    public UserEntity save(UserEntity user) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession();) {
+            Transaction transaction = session.beginTransaction();
+            session.persist(user);
+            transaction.commit();
+        }
 
         return this.getById(user.getId());
     }
 
     @Override
-    public void deleteById(Long id) {
-        Session session = null;
-        Transaction transaction = null;
-
-        session = HibernateUtil.getSessionFactory().openSession();
-        transaction = session.beginTransaction();
-        User user = session.get(User.class, id);
-        if (user != null) {
-            session.remove(user);
+    public UserEntity getById(Long id) {
+        List<Object[]> resultSet;
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            String sql = "SELECT * FROM user AS U " +
+                    "LEFT JOIN event AS E ON U.id = E.user_id " +
+                    "LEFT JOIN file AS F ON E.file_id = F.id " +
+                    "WHERE U.id = :id";
+            resultSet = session.createNativeQuery(sql).setParameter("id", id).list();
         }
-        transaction.commit();
-        session.close();
+
+        return resultSetMapper.getUserWithChildElements(resultSet);
     }
 
-    private List<User> getAllUsersInternal() {
-        List<User> users = null;
-        Session session = null;
-        Transaction transaction = null;
+    @Override
+    public List<UserEntity> getAll() {
+        return getAllUsersInternal();
+    }
 
-        session = HibernateUtil.getSessionFactory().openSession();
-        transaction = session.beginTransaction();
-        users = session.createQuery("FROM User", User.class).getResultList();
-        transaction.commit();
-        session.close();
-
-        if (users.isEmpty()) {
-            return Collections.emptyList();
-        } else {
-            return users;
+    @Override
+    public UserEntity update(UserEntity editedUser) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Transaction transaction = session.beginTransaction();
+            UserEntity user = session.get(UserEntity.class, editedUser.getId());
+            if (user != null) {
+                user.setFirstName(editedUser.getFirstName());
+                user.setLastName(editedUser.getLastName());
+                session.merge(user);
+                transaction.commit();
+                return this.getById(user.getId());
+            } else {
+                return null;
+            }
         }
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Transaction transaction = session.beginTransaction();
+            UserEntity user = session.get(UserEntity.class, id);
+            if (user != null) {
+                session.remove(user);
+            }
+            transaction.commit();
+        }
+    }
+
+    private List<UserEntity> getAllUsersInternal() {
+        List<Object[]> resultSet;
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            String sql = "SELECT * FROM user AS U " +
+                    "LEFT JOIN event AS E ON U.id = E.user_id " +
+                    "LEFT JOIN file AS F ON E.file_id = F.id";
+            resultSet = session.createNativeQuery(sql).list();
+        }
+
+        return resultSetMapper.getUsersWithChildElements(resultSet);
     }
 }

@@ -1,6 +1,6 @@
 package org.zhurko.fileshare.repository;
 
-import org.zhurko.fileshare.model.User;
+import org.zhurko.fileshare.entity.UserEntity;
 
-public interface UserRepository extends GenericRepository<User, Long> {
+public interface UserRepository extends GenericRepository<UserEntity, Long> {
 }
