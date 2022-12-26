@@ -1,5 +1,6 @@
 package org.zhurko.fileshare.repository.hibernate;
 
+import jakarta.persistence.PersistenceException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.zhurko.fileshare.entity.UserEntity;
@@ -19,6 +20,8 @@ public class UserRepositoryImpl implements UserRepository {
             Transaction transaction = session.beginTransaction();
             session.persist(user);
             transaction.commit();
+        } catch (PersistenceException ex) {
+            return null;
         }
 
         return this.getById(user.getId());

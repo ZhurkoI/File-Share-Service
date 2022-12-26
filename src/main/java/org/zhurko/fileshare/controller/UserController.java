@@ -65,23 +65,23 @@ public class UserController extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        UserDTO userDTO = null;
-        UserEntity savedUserEntity = null;
-
         String requestJson = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
+        UserDTO userDTO = null;
         try {
             userDTO = gson.fromJson(requestJson, UserDTO.class);
         } catch (JsonSyntaxException jsonSyntaxException) {
             response.setStatus(400);
         }
         if (userDTO != null) {
-            savedUserEntity = userService.save(UserDTO.toEntity(userDTO));
+            UserEntity savedUserEntity = userService.save(UserDTO.toEntity(userDTO));
             if (savedUserEntity != null) {
                 UserDTO savedUserDTO = UserDTO.fromEntity(savedUserEntity);
                 String responseJson = gson.toJson(savedUserDTO);
                 response.setStatus(200);
                 response.setContentType(JSON_CONTENT_TYPE);
                 response.getWriter().println(responseJson);
+            } else {
+                configureResponse(response, 400, JSON_CONTENT_TYPE, "Bad request");
             }
         }
     }
@@ -130,5 +130,12 @@ public class UserController extends HttpServlet {
         response.setStatus(404);
         response.setContentType(JSON_CONTENT_TYPE);
         response.getWriter().println("{\"message\": \"User not found\"}");
+    }
+
+    private void configureResponse(HttpServletResponse response, int code, String contentType,
+                                   String message) throws IOException {
+        response.setStatus(code);
+        response.setContentType(contentType);
+        response.getWriter().printf("{\"message\": \"%s\"}", message);
     }
 }
