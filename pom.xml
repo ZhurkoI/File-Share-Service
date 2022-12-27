@@ -16,10 +16,7 @@
         <maven.compiler.target>11</maven.compiler.target>
         <maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
         <mysql.driver.version>8.0.16</mysql.driver.version>
-        <db.name>l0njlm55b3n24dtu</db.name>
         <flyway.version>8.2.0</flyway.version>
-        <flyway.user>lvymtqs55gge4414</flyway.user>
-        <flyway.password>d2gjeny40kd0fgxr</flyway.password>
         <tomcat.plugin.version>2.2</tomcat.plugin.version>
         <javax.servlet.api.version>3.1.0</javax.servlet.api.version>
         <hibernate.version>6.1.4.Final</hibernate.version>
@@ -78,9 +75,7 @@
                 <artifactId>flyway-maven-plugin</artifactId>
                 <version>${flyway.version}</version>
                 <configuration>
-                    <url>jdbc:mysql://i54jns50s3z6gbjt.chr7pe7iynqr.eu-west-1.rds.amazonaws.com/${db.name}</url>
-                    <user>${flyway.user}</user>
-                    <password>${flyway.password}</password>
+                    <url>${env.JDBC_DATABASE_URL}</url>
                 </configuration>
             </plugin>
             <plugin>

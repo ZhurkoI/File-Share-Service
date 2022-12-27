@@ -13,7 +13,10 @@ public class HibernateUtil {
     public static SessionFactory getSessionFactory() {
         if (sessionFactory == null) {
             try {
-                sessionFactory = new Configuration().configure().buildSessionFactory();
+                sessionFactory = new Configuration()
+                        .configure()
+                        .setProperty("hibernate.connection.url", System.getenv("JDBC_DATABASE_URL"))
+                        .buildSessionFactory();
             } catch (Exception e) {
                 e.printStackTrace();
             }
