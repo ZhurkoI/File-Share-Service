@@ -6,14 +6,10 @@
     <session-factory>
         <property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>
         <property name="hibernate.connection.driver_class">com.mysql.jdbc.Driver</property>
-        <property name="hibernate.connection.url">jdbc:mysql://i54jns50s3z6gbjt.chr7pe7iynqr.eu-west-1.rds.amazonaws.com:3306/l0njlm55b3n24dtu?password=d2gjeny40kd0fgxr&amp;user=lvymtqs55gge4414____</property>
-<!--        <property name="hibernate.connection.username">foo</property>-->
-<!--        <property name="hibernate.connection.password">foo</property>-->
         <property name="show_sql">true</property>
 
         <mapping class="org.zhurko.fileshare.entity.UserEntity" />
         <mapping class="org.zhurko.fileshare.entity.FileEntity" />
         <mapping class="org.zhurko.fileshare.entity.EventEntity" />
-
     </session-factory>
 </hibernate-configuration>
