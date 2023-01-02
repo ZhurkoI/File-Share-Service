@@ -5,18 +5,18 @@ import org.zhurko.fileshare.dto.EventDTO;
 import org.zhurko.fileshare.entity.EventEntity;
 import org.zhurko.fileshare.repository.hibernate.EventRepositoryImpl;
 import org.zhurko.fileshare.service.EventService;
+import org.zhurko.fileshare.util.HttpUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class EventController extends HttpServlet {
 
-    private static final String JSON_CONTENT_TYPE = "application/json";
     private final EventService eventService = new EventService(new EventRepositoryImpl());
     private final Gson gson = new Gson();
 
@@ -27,25 +27,13 @@ public class EventController extends HttpServlet {
         try {
             userId = Long.valueOf(request.getHeader("User-Id"));
         } catch (NumberFormatException numberFormatException) {
-            configureResponse(response, 400, JSON_CONTENT_TYPE, "Bad request");
+            HttpUtils.configureResponse(response, 400, HttpUtils.compileMessage("Bad request"));
             return;
         }
 
         List<EventEntity> events = eventService.getByUserId(userId);
-        List<EventDTO> eventsDTO = new ArrayList<>();
-        for (EventEntity event : events) {
-            eventsDTO.add(EventDTO.fromEntity(event));
-        }
+        List<EventDTO> eventsDTO = events.stream().map(EventDTO::fromEntity).collect(Collectors.toList());
         String responseJson = gson.toJson(eventsDTO);
-        response.setStatus(200);
-        response.setContentType(JSON_CONTENT_TYPE);
-        response.getWriter().println(responseJson);
-    }
-
-    private void configureResponse(HttpServletResponse response, int code, String contentType,
-                                   String message) throws IOException {
-        response.setStatus(code);
-        response.setContentType(contentType);
-        response.getWriter().printf("{\"message\": \"%s\"}", message);
+        HttpUtils.configureResponse(response, 400, responseJson);
     }
 }

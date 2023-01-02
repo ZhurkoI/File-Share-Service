@@ -4,14 +4,12 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.zhurko.fileshare.entity.EventEntity;
 import org.zhurko.fileshare.repository.EventRepository;
-import org.zhurko.fileshare.util.HibernateResultSetMapper;
 import org.zhurko.fileshare.util.HibernateUtil;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class EventRepositoryImpl implements EventRepository {
-
-    private final HibernateResultSetMapper resultSetMapper = new HibernateResultSetMapper();
 
     @Override
     public EventEntity save(EventEntity event) {
@@ -76,14 +74,19 @@ public class EventRepositoryImpl implements EventRepository {
 
     @Override
     public List<EventEntity> getByUserId(Long id) {
-        List<Object[]> resultSet;
+        List<EventEntity> eventEntities = new ArrayList<>();
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            String sql = "SELECT E.id, E.created, E.type, E.file_id, E.user_id, F.id, F.filepath " +
-                    "FROM event AS E JOIN file AS F ON E.file_id = F.id " +
+            String sql = "SELECT {E.*}, {F.*} " +
+                    "FROM event AS E " +
+                    "JOIN file AS F ON E.file_id = F.id " +
                     "WHERE E.user_id = :userId";
-            resultSet = session.createNativeQuery(sql).setParameter("userId", id).list();
+            eventEntities = session
+                    .createNativeQuery(sql, EventEntity.class, "E")
+                    .addJoin("F", "E.file")
+                    .setParameter("userId", id)
+                    .getResultList();
         }
 
-        return resultSetMapper.getEventsWithFiles(resultSet);
+        return eventEntities;
     }
 }

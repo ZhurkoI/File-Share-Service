@@ -6,59 +6,51 @@ import org.zhurko.fileshare.dto.UserDTO;
 import org.zhurko.fileshare.entity.UserEntity;
 import org.zhurko.fileshare.repository.hibernate.UserRepositoryImpl;
 import org.zhurko.fileshare.service.UserService;
+import org.zhurko.fileshare.util.HttpUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class UserController extends HttpServlet {
 
-    private static final String JSON_CONTENT_TYPE = "application/json";
     private final UserService userService = new UserService(new UserRepositoryImpl());
     private final Gson gson = new Gson();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         Long userId;
-        UserEntity user = null;
         List<UserEntity> users;
 
         String getPathInfo = request.getPathInfo();
         if (getPathInfo == null || getPathInfo.equals("/")) {
             users = userService.getAll();
             if (!users.isEmpty()) {
-                List<UserDTO> usersDTO = new ArrayList<>();
-                for (UserEntity userEntity : users) {
-                    usersDTO.add(UserDTO.fromEntity(userEntity));
-                }
+                List<UserDTO> usersDTO = users.stream().map(UserDTO::fromEntity).collect(Collectors.toList());
                 String responseJson = gson.toJson(usersDTO);
-                response.setStatus(200);
-                response.setContentType(JSON_CONTENT_TYPE);
-                response.getWriter().println(responseJson);
+                HttpUtils.configureResponse(response, 200, responseJson);
             } else {
-                sendResponseUserNotFound(response);
+                HttpUtils.configureResponse(response, 404, HttpUtils.compileMessage("Users not found"));
             }
         } else {
             try {
                 userId = Long.valueOf(request.getPathInfo().substring(1));
-            } catch (NumberFormatException nfe) {
-                sendResponseUserNotFound(response);
+            } catch (NumberFormatException numberFormatException) {
+                HttpUtils.configureResponse(response, 400, HttpUtils.compileMessage("Illegal argument"));
                 return;
             }
-            user = userService.getById(userId);
-            if (user != null) {
+            try {
+                UserEntity user = userService.getById(userId);
                 UserDTO userDTO = UserDTO.fromEntity(user);
                 String responseJson = gson.toJson(userDTO);
-                response.setStatus(200);
-                response.setContentType(JSON_CONTENT_TYPE);
-                response.getWriter().println(responseJson);
-            } else {
-                sendResponseUserNotFound(response);
+                HttpUtils.configureResponse(response, 200, responseJson);
+            } catch (IllegalArgumentException illegalArgumentException) {
+                HttpUtils.configureResponse(response, 404,
+                        HttpUtils.compileMessage(illegalArgumentException.getMessage()));
             }
         }
     }
@@ -70,18 +62,16 @@ public class UserController extends HttpServlet {
         try {
             userDTO = gson.fromJson(requestJson, UserDTO.class);
         } catch (JsonSyntaxException jsonSyntaxException) {
-            response.setStatus(400);
+            HttpUtils.configureResponse(response, 400, HttpUtils.compileMessage("Bad request"));
         }
         if (userDTO != null) {
             UserEntity savedUserEntity = userService.save(UserDTO.toEntity(userDTO));
             if (savedUserEntity != null) {
                 UserDTO savedUserDTO = UserDTO.fromEntity(savedUserEntity);
                 String responseJson = gson.toJson(savedUserDTO);
-                response.setStatus(200);
-                response.setContentType(JSON_CONTENT_TYPE);
-                response.getWriter().println(responseJson);
+                HttpUtils.configureResponse(response, 200, responseJson);
             } else {
-                configureResponse(response, 400, JSON_CONTENT_TYPE, "Bad request");
+                HttpUtils.configureResponse(response, 400, HttpUtils.compileMessage("Bad request"));
             }
         }
     }
@@ -94,7 +84,7 @@ public class UserController extends HttpServlet {
         try {
             userDTO = gson.fromJson(requestJson, UserDTO.class);
         } catch (JsonSyntaxException jsonSyntaxException) {
-            response.setStatus(400);
+            HttpUtils.configureResponse(response, 400, HttpUtils.compileMessage("Bad request"));
         }
 
         if (userDTO != null) {
@@ -102,11 +92,9 @@ public class UserController extends HttpServlet {
             if (updatedUserEntity != null) {
                 UserDTO updatedUserDTO = UserDTO.fromEntity(updatedUserEntity);
                 String responseJson = gson.toJson(updatedUserDTO);
-                response.setStatus(200);
-                response.setContentType(JSON_CONTENT_TYPE);
-                response.getWriter().println(responseJson);
+                HttpUtils.configureResponse(response, 200, responseJson);
             } else {
-                sendResponseUserNotFound(response);
+                HttpUtils.configureResponse(response, 404, HttpUtils.compileMessage("Users not found"));
             }
         }
     }
@@ -117,25 +105,11 @@ public class UserController extends HttpServlet {
 
         try {
             userId = Long.valueOf(request.getPathInfo().substring(1));
-            userService.deleteById(userId);
-        } catch (NumberFormatException nfe) {
-            sendResponseUserNotFound(response);
+        } catch (NumberFormatException numberFormatException) {
+            HttpUtils.configureResponse(response, 404, HttpUtils.compileMessage("Illegal argument"));
+            return;
         }
-        response.setStatus(200);
-        response.setContentType(JSON_CONTENT_TYPE);
-        response.getWriter().println("{\"message\": \"Deleted\"}");
-    }
-
-    private void sendResponseUserNotFound(HttpServletResponse response) throws IOException {
-        response.setStatus(404);
-        response.setContentType(JSON_CONTENT_TYPE);
-        response.getWriter().println("{\"message\": \"User not found\"}");
-    }
-
-    private void configureResponse(HttpServletResponse response, int code, String contentType,
-                                   String message) throws IOException {
-        response.setStatus(code);
-        response.setContentType(contentType);
-        response.getWriter().printf("{\"message\": \"%s\"}", message);
+        userService.deleteById(userId);
+        HttpUtils.configureResponse(response, 200, HttpUtils.compileMessage("Deleted"));
     }
 }

@@ -28,3 +28,6 @@ trash/
 
 # Build files
 target/
+
+# Environment varialbles
+.env

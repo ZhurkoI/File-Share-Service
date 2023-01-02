@@ -25,10 +25,10 @@
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>FileController</servlet-name>
-        <url-pattern>/api/v1/files/upload</url-pattern>
+        <url-pattern>/api/v1/files/*</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>EventController</servlet-name>
-        <url-pattern>/api/v1/events</url-pattern>
+        <url-pattern>/api/v1/events/*</url-pattern>
     </servlet-mapping>
 </web-app>

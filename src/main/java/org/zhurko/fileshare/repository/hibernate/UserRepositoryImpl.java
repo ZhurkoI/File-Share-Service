@@ -5,18 +5,16 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.zhurko.fileshare.entity.UserEntity;
 import org.zhurko.fileshare.repository.UserRepository;
-import org.zhurko.fileshare.util.HibernateResultSetMapper;
 import org.zhurko.fileshare.util.HibernateUtil;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class UserRepositoryImpl implements UserRepository {
 
-    private final HibernateResultSetMapper resultSetMapper = new HibernateResultSetMapper();
-
     @Override
     public UserEntity save(UserEntity user) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession();) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Transaction transaction = session.beginTransaction();
             session.persist(user);
             transaction.commit();
@@ -29,16 +27,25 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public UserEntity getById(Long id) {
-        List<Object[]> resultSet;
+        UserEntity user;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            String sql = "SELECT * FROM user AS U " +
+            String sql = "SELECT {U.*}, {E.*}, {F.*} " +
+                    "FROM user AS U " +
                     "LEFT JOIN event AS E ON U.id = E.user_id " +
                     "LEFT JOIN file AS F ON E.file_id = F.id " +
                     "WHERE U.id = :id";
-            resultSet = session.createNativeQuery(sql).setParameter("id", id).list();
+            user = session.createNativeQuery(sql, UserEntity.class, "U")
+                    .addJoin("E", "U.events")
+                    .addJoin("F", "E.file")
+                    .setParameter("id", id)
+                    .getSingleResultOrNull();
         }
 
-        return resultSetMapper.getUserWithChildElements(resultSet);
+        if (user != null) {
+            return user;
+        } else {
+            throw new IllegalArgumentException("User with id=" + id + " was not found");
+        }
     }
 
     @Override
@@ -76,14 +83,20 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     private List<UserEntity> getAllUsersInternal() {
-        List<Object[]> resultSet;
+        List<UserEntity> users;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            String sql = "SELECT * FROM user AS U " +
+            String sql = "SELECT {U.*}, {E.*}, {F.*} " +
+                    "FROM user AS U " +
                     "LEFT JOIN event AS E ON U.id = E.user_id " +
                     "LEFT JOIN file AS F ON E.file_id = F.id";
-            resultSet = session.createNativeQuery(sql).list();
+            users = session.createNativeQuery(sql, UserEntity.class, "U")
+                    .addJoin("E", "U.events")
+                    .addJoin("F", "E.file")
+                    .getResultStream()
+                    .distinct()
+                    .collect(Collectors.toList());
         }
 
-        return resultSetMapper.getUsersWithChildElements(resultSet);
+        return users;
     }
 }

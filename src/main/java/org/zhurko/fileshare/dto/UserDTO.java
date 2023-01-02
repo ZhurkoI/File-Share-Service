@@ -1,10 +1,9 @@
 package org.zhurko.fileshare.dto;
 
-import org.zhurko.fileshare.entity.EventEntity;
 import org.zhurko.fileshare.entity.UserEntity;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class UserDTO {
 
@@ -60,14 +59,11 @@ public class UserDTO {
         userDTO.setFirstName(userEntity.getFirstName());
         userDTO.setLastName(userEntity.getLastName());
         userDTO.setEmail(userEntity.getEmail());
-
-        List<EventDTO> eventsDTO = new ArrayList<>();
-        for (EventEntity eventEntity : userEntity.getEvents()) {
-            eventsDTO.add(EventDTO.fromEntity(eventEntity));
-        }
-
-        userDTO.setEvents(eventsDTO);
-
+        userDTO.setEvents(userEntity.getEvents()
+                .stream()
+                .map(EventDTO::fromEntity)
+                .collect(Collectors.toList())
+        );
         return userDTO;
     }
 

@@ -52,4 +52,17 @@ public class EventDTO {
 
         return eventDTO;
     }
+
+    public static EventEntity toEntity(EventDTO eventDTO) {
+        EventEntity eventEntity = new EventEntity();
+
+        if (eventDTO.getId() != 0) {
+            eventEntity.setId(eventDTO.getId());
+        }
+        eventEntity.setCreated(eventDTO.getCreated());
+        eventEntity.setEventType(eventDTO.getEventType());
+        eventEntity.setFile(FileDTO.toEntity(eventDTO.getFile()));
+
+        return eventEntity;
+    }
 }
