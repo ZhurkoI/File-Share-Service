@@ -36,7 +36,7 @@ public class FileService {
         try {
             user = userService.getById(userId);
         } catch (IllegalArgumentException illegalArgumentException) {
-            throw new IllegalArgumentException(illegalArgumentException);
+            throw new IllegalArgumentException(illegalArgumentException.getMessage());
         }
 
         String generalUploadsDirPath = createGeneralUploadDirectory();
