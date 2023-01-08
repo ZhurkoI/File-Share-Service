@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
+                             http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd" version="3.1">
+    <display-name>File Share Service</display-name>
+
+    <servlet>
+        <servlet-name>UserController</servlet-name>
+        <servlet-class>org.zhurko.fileshare.controller.UserController</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>FileController</servlet-name>
+        <servlet-class>org.zhurko.fileshare.controller.FileController</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>EventController</servlet-name>
+        <servlet-class>org.zhurko.fileshare.controller.EventController</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>UserController</servlet-name>
+        <url-pattern>/api/v1/users/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>FileController</servlet-name>
+        <url-pattern>/api/v1/files/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>EventController</servlet-name>
+        <url-pattern>/api/v1/events/*</url-pattern>
+    </servlet-mapping>
+</web-app>
